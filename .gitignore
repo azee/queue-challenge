@@ -1,0 +1,18 @@
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+target
+.idea
+*.iml
+
+/.*
+!.gitignore
+
+target/
+
+# MAC
+.DS_Store
