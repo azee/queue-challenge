@@ -2,6 +2,8 @@ package com.example;
 
 import com.example.beans.Message;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -12,10 +14,11 @@ import static org.hamcrest.core.Is.is;
 /**
  * Created by azee on 10.04.16.
  */
+@RunWith(Parameterized.class)
 public class ConcurrentPullDeleteTest extends CommonBaseTest {
 
-    public ConcurrentPullDeleteTest(QueueService service) {
-        super(service);
+    public ConcurrentPullDeleteTest(QueueService service, String queueClassName) {
+        super(service, queueClassName);
     }
 
     @Test
@@ -33,7 +36,7 @@ public class ConcurrentPullDeleteTest extends CommonBaseTest {
         }
         executor.shutdown();
         while (!executor.isTerminated()) {}
-        assertThat(service.messagesInQueue(QUEUE_NAME), is(0L));
-        assertThat(service.pendingMessages(QUEUE_NAME), is(0L));
+        assertThat(getMessage("Messages queue is not empty"), service.messagesInQueue(QUEUE_NAME), is(0L));
+        assertThat(getMessage("Pending messages container is not empty"), service.pendingMessages(QUEUE_NAME), is(0L));
     }
 }

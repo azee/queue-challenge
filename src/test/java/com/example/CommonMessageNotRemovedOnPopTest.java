@@ -2,6 +2,8 @@ package com.example;
 
 import com.example.beans.Message;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -9,10 +11,12 @@ import static org.hamcrest.core.Is.is;
 /**
  * Created by azee on 10.04.16.
  */
+@RunWith(Parameterized.class)
 public class CommonMessageNotRemovedOnPopTest extends CommonBaseTest {
 
-    public CommonMessageNotRemovedOnPopTest(QueueService service) {
-        super(service);
+
+    public CommonMessageNotRemovedOnPopTest(QueueService service, String queueClassName) {
+        super(service, queueClassName);
     }
 
     @Test(timeout = 1000)

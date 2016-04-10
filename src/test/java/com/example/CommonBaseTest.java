@@ -1,7 +1,6 @@
 package com.example;
 
 import org.junit.Before;
-import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.util.Arrays;
@@ -10,21 +9,22 @@ import java.util.Collection;
 /**
  * Created by azee on 10.04.16.
  */
-@RunWith(Parameterized.class)
 public class CommonBaseTest {
 
     protected QueueService service;
+    protected String queueClassName;
     final String QUEUE_NAME = "singleQueueName";
 
-    public CommonBaseTest(QueueService service) {
+    public CommonBaseTest(QueueService service, String queueClassName) {
         this.service = service;
+        this.queueClassName = queueClassName;
     }
 
-    @Parameterized.Parameters
+    @Parameterized.Parameters(name = "{index}: queue {1}")
     public static Collection getServices() {
         return Arrays.asList(new Object[][]{
-                {InMemoryQueueService.getService()},
-                {FileQueueService.getService()}
+                {InMemoryQueueService.getService(), InMemoryQueueService.getService().getClass().getSimpleName()},
+                {FileQueueService.getService(), FileQueueService.getService().getClass().getSimpleName()}
         });
     }
 
@@ -32,5 +32,9 @@ public class CommonBaseTest {
     public void setUp(){
         service.setTimeout(30000);
         service.clearMessages(QUEUE_NAME);
+    }
+
+    protected String getMessage(String message){
+        return String.format("[%s]: %s", service.getClass().getSimpleName(), message);
     }
 }

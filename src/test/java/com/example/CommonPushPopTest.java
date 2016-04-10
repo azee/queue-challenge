@@ -2,6 +2,8 @@ package com.example;
 
 import com.example.beans.Message;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import static junit.framework.TestCase.assertNull;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -10,10 +12,11 @@ import static org.hamcrest.core.Is.is;
 /**
  * Created by azee on 10.04.16.
  */
+@RunWith(Parameterized.class)
 public class CommonPushPopTest extends CommonBaseTest {
 
-    public CommonPushPopTest(QueueService service) {
-        super(service);
+    public CommonPushPopTest(QueueService service, String queueClassName) {
+        super(service, queueClassName);
     }
 
     @Test
