@@ -3,7 +3,7 @@ package com.example;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
- * Created by azee on 08.04.16.
+ * Created by azee on 10.04.16.
  */
 public abstract class BaseQueueService implements QueueService {
 
