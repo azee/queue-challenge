@@ -22,8 +22,7 @@ public class FileQueueService extends BaseQueueService {
     private final String LOCK_DIR_PATH = ".lock";
     private final String MESSAGES_PATH = "messages";
 
-
-    private final long LOCK_ITERATION_TIMEOUT = 50;
+    private final long LOCK_ITERATION_TIMEOUT = 100;
 
     /**
      * Singleton getter
@@ -35,6 +34,11 @@ public class FileQueueService extends BaseQueueService {
         return service;
     }
 
+    /**
+     * Constructor
+     * Reads property if base queues url is redefined (e.g. parametrized by Jenkins) and keep default if not set.
+     * Starts the watchdog
+     */
     private FileQueueService() {
         if (!isEmpty(System.getProperty("filequeue.base.directory"))){
             BASE = System.getProperty("filequeue.base.directory");
@@ -48,14 +52,21 @@ public class FileQueueService extends BaseQueueService {
 
     @Override
     public void push(String queueName, Message message) {
+        //We keep reception time of the message to use it as index for FIFO
         long now = System.nanoTime();
+
+        //Create a directory for the queue a new queue name received
         File queueDir = getQueueBaseDir(queueName);
         if (!queueDir.exists()){
             queueDir.mkdir();
         }
+
+        //Lock is implemented thorough a hidden directory
+        //Each queue has its own lock
         File lock = getLock(queueName);
         try {
             lock(lock);
+            //Serialize message
             writeToFile(queueName, message, now);
         } catch (IOException e){
             throw new QueueException("Error occurred while performing file operations", e);
@@ -69,6 +80,9 @@ public class FileQueueService extends BaseQueueService {
         File lock = getLock(queueName);
         try {
             lock(lock);
+
+            //Pull will move file to a pending messages directory
+            //Create a directory if not exists
             File pendings = getQueuePendingDir(queueName);
             if (!pendings.exists()){
                 pendings.mkdir();
@@ -79,13 +93,18 @@ public class FileQueueService extends BaseQueueService {
                 return null;
             }
 
+            //Select the file with lowest receive timestamp
             File messageFile = null;
             for (File file : files){
                 if (messageFile == null || file.getName().compareTo(messageFile.getName()) < 0){
                     messageFile = file;
                 }
             }
+
+            //Deserialize
             Object message = readFromFile(messageFile);
+
+            //Move message file to pendings
             messageFile.renameTo(new File(getQueuePendingDir(queueName) + File.separator + messageFile.getName()));
             return (Message)message;
         } finally {
@@ -98,6 +117,8 @@ public class FileQueueService extends BaseQueueService {
         File lock = getLock(queueName);
         try {
             lock(lock);
+            //Each message has an UUID
+            //Find a file with corresponding uuid in name and remove it
             for (File file : getQueuePendingDir(queueName).listFiles()){
                 if (file.getName().contains(message.getUuid())){
                     file.delete();
@@ -155,6 +176,7 @@ public class FileQueueService extends BaseQueueService {
         lock.delete();
     }
 
+    /////////////Directory path methods///////////////
     private File getLock(String queueName){
         return new File(getQueueBaseDirPath(queueName + File.separator + LOCK_DIR_PATH));
     }
@@ -186,7 +208,11 @@ public class FileQueueService extends BaseQueueService {
     private String getMessageDirPath(String queueName, String filename){
         return getQueueDirPath(queueName) + File.separator + filename;
     }
+    ////////////////////////////////////////////////
 
+    /**
+     * Serialize a message
+     */
     private void writeToFile(String queueName, Message message, long time) throws IOException {
         File messagesDir = getQueueDir(queueName);
         if (!messagesDir.exists()){
@@ -198,6 +224,9 @@ public class FileQueueService extends BaseQueueService {
         oos.writeObject(message);
     }
 
+    /**
+     * Deserialize a message
+     */
     private Message readFromFile(File file) {
         try {
             FileInputStream fin = new FileInputStream(file);
@@ -210,6 +239,9 @@ public class FileQueueService extends BaseQueueService {
         }
     }
 
+    /**
+     * Get all pending directories for all queues
+     */
     private List<File> getPendingDirs() {
         List<File> dirs = new ArrayList<>();
         for (File queueDir : new File(BASE).listFiles()){
