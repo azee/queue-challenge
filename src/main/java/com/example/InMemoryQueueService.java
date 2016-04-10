@@ -110,10 +110,8 @@ public class InMemoryQueueService extends BaseQueueService {
         } finally {
             updateLock.unlock();
         }
-
     }
-
-
+    
     /**
      * Goes through pending container to define if ttl of eny is exceeded
      * If so moves messages to the head of the queue
