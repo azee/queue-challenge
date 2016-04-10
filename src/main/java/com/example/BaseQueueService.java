@@ -7,6 +7,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  */
 public abstract class BaseQueueService implements QueueService {
 
+    //Reception (delete) confirmation timeout for a queue
     protected volatile long timeout = 30000;
 
     Object lock = new Object();
@@ -31,6 +32,7 @@ public abstract class BaseQueueService implements QueueService {
     @Override
     public synchronized void setTimeout(long timeout) {
         this.timeout = timeout;
+        //Need to wake watchdog immediately if timeout changed
         synchronized (lock){
             lock.notify();
         }
