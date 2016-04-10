@@ -48,6 +48,7 @@ public class FileQueueService extends BaseQueueService {
 
     @Override
     public void push(String queueName, Message message) {
+        long now = System.nanoTime();
         File queueDir = getQueueBaseDir(queueName);
         if (!queueDir.exists()){
             queueDir.mkdir();
@@ -55,7 +56,7 @@ public class FileQueueService extends BaseQueueService {
         File lock = getLock(queueName);
         try {
             lock(lock);
-            writeToFile(queueName, message);
+            writeToFile(queueName, message, now);
         } catch (IOException e){
             throw new QueueException("Error occurred while performing file operations", e);
         }finally {
@@ -84,7 +85,7 @@ public class FileQueueService extends BaseQueueService {
                     messageFile = file;
                 }
             }
-            Object message = readFromFileFile(messageFile);
+            Object message = readFromFile(messageFile);
             messageFile.renameTo(new File(getQueuePendingDir(queueName) + File.separator + messageFile.getName()));
             return (Message)message;
         } finally {
@@ -186,18 +187,18 @@ public class FileQueueService extends BaseQueueService {
         return getQueueDirPath(queueName) + File.separator + filename;
     }
 
-    private void writeToFile(String queueName, Message message) throws IOException {
-        String fileName = System.currentTimeMillis() + message.getUuid();
+    private void writeToFile(String queueName, Message message, long time) throws IOException {
         File messagesDir = getQueueDir(queueName);
         if (!messagesDir.exists()){
             messagesDir.mkdir();
         }
+        String fileName = time + message.getUuid();
         FileOutputStream fout = new FileOutputStream(getMessageDirPath(queueName, fileName));
         ObjectOutputStream oos = new ObjectOutputStream(fout);
         oos.writeObject(message);
     }
 
-    private Message readFromFileFile(File file) {
+    private Message readFromFile(File file) {
         try {
             FileInputStream fin = new FileInputStream(file);
             ObjectInputStream ois = new ObjectInputStream(fin);
@@ -212,11 +213,13 @@ public class FileQueueService extends BaseQueueService {
     private List<File> getPendingDirs() {
         List<File> dirs = new ArrayList<>();
         for (File queueDir : new File(BASE).listFiles()){
-            for (File dir : queueDir.listFiles()){
-                if (dir.getName().equals(PENDING_PATH)){
-                    dirs.add(dir);
+            if (queueDir.isDirectory()){
+                for (File dir : queueDir.listFiles()){
+                    if (dir.isDirectory() && dir.getName().equals(PENDING_PATH)){
+                        dirs.add(dir);
+                    }
+                    continue;
                 }
-                continue;
             }
         }
         return dirs;

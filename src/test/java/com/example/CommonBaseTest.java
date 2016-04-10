@@ -13,7 +13,7 @@ public class CommonBaseTest {
 
     protected QueueService service;
     protected String queueClassName;
-    final String QUEUE_NAME = "singleQueueName";
+    protected final String QUEUE_NAME = "singleQueueName";
 
     public CommonBaseTest(QueueService service, String queueClassName) {
         this.service = service;
