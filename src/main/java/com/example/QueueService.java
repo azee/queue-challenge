@@ -1,5 +1,7 @@
 package com.example;
 
+import com.example.beans.Message;
+
 public interface QueueService {
 
   //
@@ -18,18 +20,19 @@ public interface QueueService {
   //   deletes a message from the queue that was received by pull().
   //
 
-    public void push(String queueName, Object message);
+    public void push(String queueName, Message message);
 
-    public Object pull(String queueName);
+    public Message pull(String queueName);
 
-    public void delete(String queueName, Object message);
+    public void delete(String queueName, Message message);
 
     public void setTimeout(long timeout);
+
+    public long getTimeout();
 
     public long messagesInQueue(String queueName);
 
     public long pendingMessages(String queueName);
 
     public void clearMessages(String queueName);
-
 }

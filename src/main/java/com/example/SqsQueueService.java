@@ -1,6 +1,7 @@
 package com.example;
 
 import com.amazonaws.services.sqs.AmazonSQSClient;
+import com.example.beans.Message;
 
 public class SqsQueueService extends BaseQueueService {
   //
@@ -13,17 +14,17 @@ public class SqsQueueService extends BaseQueueService {
 
 
   @Override
-  public void push(String queueName, Object message) {
+  public void push(String queueName, Message message) {
 
   }
 
   @Override
-  public Object pull(String queueName) {
+  public Message pull(String queueName) {
     return null;
   }
 
   @Override
-  public void delete(String queueName, Object message) {
+  public void delete(String queueName, Message message) {
 
   }
 
@@ -38,5 +39,10 @@ public class SqsQueueService extends BaseQueueService {
   }
 
   public SqsQueueService(AmazonSQSClient sqsClient) {
+  }
+
+  @Override
+  protected void clearPending() {
+
   }
 }
